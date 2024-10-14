@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block body_class %}onboarding{% endblock %}
+
+{% block content %}
+
+<h3>Select Item to Trade</h3>
+
+<!-- Display user's own offered items -->
+<h4>Your Offered Items</h4>
+<ul id="your-offered-items">
+    {% for offered in user_offered_items %}
+    <li>
+        <input type="radio" name="your_item" value="{{ offered.id }}" id="your_item_{{ offered.id }}">
+        <label for="your_item_{{ offered.id }}">{{ offered.item.title }} - {{ offered.item.condition }}</label>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Display the other user's offered items -->
+<h4>{{ other_user.username }}'s Offered Items</h4>
+<ul id="other-offered-items">
+    {% for offered in other_user_offered_items %}
+    <li>
+        <input type="radio" name="their_item" value="{{ offered.id }}" id="their_item_{{ offered.id }}">
+        <label for="their_item_{{ offered.id }}">{{ offered.item.title }} - {{ offered.item.condition }}</label>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Trade Button -->
+<button id="initiate-trade-btn" class="btn btn-success">Initiate Trade</button>
+
+<!-- Feedback Area -->
+<div id="trade-feedback" style="color: green;"></div>
+
+<script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+{% endblock %}

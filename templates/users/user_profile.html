@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block body_class %}onboarding{% endblock %}
+
+{% block content %}
+
+<h1>{{ other_user.username }}'s Profile</h1>
+<section>
+    <div class="border-bottom border-black border-2">
+        <h2>Offered Items</h2>
+    </div>
+    <ul class="item-list" id="offered-items-list">
+        {% for offered in offered_items %}
+        <li class="border border-2 border-black">
+            <h5>{{ offered.item.title }}</h3>
+            <p>Condition: {{ offered.item.condition }}</p>
+            {% if offered.item.image_url %}
+                <img src="{{ offered.item.image_url }}" alt="{{ offered.item.title }}">
+            {% endif %}
+            <button class="remove-item-btn btn btn-danger" data-item-id="{{ offered.item_id }}" data-item-type="offered">Remove</button>
+        </li>
+        {% else %}
+        <p>You haven't offered any items yet.</p>
+        {% endfor %}
+    </ul>
+</section>
+
+<section>
+    <div class="border-bottom border-black border-2">
+        <h2>Requested Items</h2>
+    </div>
+    <ul class="item-list" id="requested-items-list">
+        {% for requested in requested_items %}
+        <li class="border border-2 border-black">
+            <h3>{{ requested.item.title }}</h3>
+            <p>Condition: {{ requested.item.condition }}</p>
+            {% if requested.item.image_url %}
+                <img src="{{ requested.item.image_url }}" alt="{{ requested.item.title }}">
+            {% endif %}
+            <button class="remove-item-btn btn btn-danger" data-item-id="{{ requested.item_id }}" data-item-type="requested">Remove</button>
+        </li>
+        {% else %}
+        <p>You haven't requested any items yet.</p>
+        {% endfor %}
+    </ul>
+</section>
+
+{% if other_user.id != curr_user.id %}
+    <a href="/user/{{ other_user.id }}/trade-items" class="btn btn-success link-light">Trade with {{ other_user.username }}</a>
+{% endif %}
+
+{% if other_user.id == curr_user.id %}
+    <a href="/user/pending-trades" class="btn btn-primary link-light">Pending Trades</a>
+    <a href="/user/{{ other_user.id }}/edit" class="btn btn-secondary link-light">Edit Profile</a>
+{% endif %}
+
+<script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block body_class %}onboarding{% endblock %}
+
+{% block content %}
+<h3>Your Pending Trades</h3>
+<ul>
+    {% for trade in trades %}
+        {% if trade.status == 'Pending' %}
+        <li>
+            <p>You're offering: {{ trade.offered_item.item.title }}</p>
+            <p>For: {{ trade.requested_item.item.title }}</p>
+            <button class="accept-trade-btn btn btn-success" data-trade-id="{{ trade.id }}">Accept</button>
+            <button class="reject-trade-btn btn btn-danger" data-trade-id="{{ trade.id }}">Reject</button>
+        </li>
+        {% endif %}
+    {% else %}
+    <p>No pending trades.</p>
+        {% if trade.status == 'Accepted' %}
+        <h3>Your Accepted Trades</h3>
+        <li>
+            <p>You're offering: {{ trade.offered_item.item.title }}</p>
+            <p>For: {{ trade.requested_item.item.title }}</p>
+        </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+
+<script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+{% endblock %}
