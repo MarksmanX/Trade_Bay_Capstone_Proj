@@ -23,6 +23,9 @@ class Ebay_24(object):
             
             items = []
             for item in response.reply.searchResult.item:
+                if len(items) >= 10:  # Limit the items list to 10
+                    break
+                
                 title = item.title
                 condition = item.condition.conditionDisplayName if hasattr(item, 'condition') else None
                 # Try multiple image sources
