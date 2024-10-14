@@ -1,56 +1,72 @@
-# Capstone Project One
+TradeBay - Barter Platform
+Welcome to TradeBay, a web-based platform where users can barter items instead of purchasing them! The platform enables users to offer items they own and request items from others, facilitating trades between users without the exchange of money.
 
-We have broken down the Capstone Project into easy-to-follow steps. Each step of the capstone contains a link with instructions for that step. Here’s a quick overview of what you’ll do for each step of your capstone project:
+Website Overview
+TradeBay is designed to allow users to create, manage, and engage in item trades. Users can list items they want to offer and specify items they are looking for. The app connects users to trade goods, fostering a community of exchange without monetary transactions.
+Here is a link to the deployed website on render: https://trade-bay-capstone-proj.onrender.com.
 
-1. Step One: Initial Project Ideas: You’ll pick up to 3 project ideas to propose to your mentor and the Springboard community. You’ll also explore some potential APIs.
-2. Step Two: Project Proposal: For this step, you’ll write a proposal for the site you want to build. This will help your mentor better understand your chosen capstone project idea.
-3. Step Three: Schema Design and API Selection: After your mentor approves of your capstone project proposal, you’ll figure out the database design of your application and which API you’ll be using.
-4. Step Four: Coding User Flows: Once you’ve figured out what you’re building, you’ll write the code to implement it. It’s important to think about what you want a user’s experience to be like as they navigate your site.
-5. Step Five: Polishing Your Application: Once you have the core functionality implemented, you’ll focus on additional UI enhancements and styling for your application.
-6. Step Six: Documenting and Submission: You’ve done a lot of work so now it’s time to show your mentor your progress! Create a README in markdown, make sure your GitHub is organized, and submit your finalized project.
+Features Implemented
+1. User Authentication
+Feature: Users can sign up, log in, and maintain a personalized account.
+Reason: User authentication is essential for ensuring that trades are made between verified users and that each user has a unique profile and set of items to trade.
+2. Item Listing (Offering and Requesting)
+Feature: Users can list items they wish to offer and specify the items they are seeking.
+Reason: A core component of the platform is the ability for users to engage in trade, and this requires categorizing items as offered or requested.
+3. Trade Proposals and Acceptance
+Feature: Users can propose trades by offering items in exchange for requested items, and the trade status can be updated to ‘Pending’ or ‘Accepted’.
+Reason: The ability to propose and accept trades is fundamental to a barter system. This feature ensures that users can negotiate trades and formalize agreements.
+4. Item Management (Remove and Update)
+Feature: Users can remove items from their offered or requested lists and update them as needed.
+Reason: Keeping the list of items up to date ensures that users only display items they are willing to trade, enhancing the credibility and functionality of the site.
+5. CSRF Protection
+Feature: Security features such as Cross-Site Request Forgery (CSRF) protection are in place.
+Reason: This prevents unauthorized users from performing malicious actions on behalf of logged-in users.
+User Flow
+Sign Up / Log In: Users begin by creating an account or logging in if they already have one.
+Profile Management: Once logged in, users can update their profile with an avatar, email, and username.
+Item Listing: Users can then list items they want to offer or request.
+View and Propose Trades: Users can browse other users' offerings and propose trades.
+Accept Trades: When a trade is proposed, the receiving user can choose to accept or decline the trade.
+Complete Trade: Once a trade is accepted, the status is updated, and users receive confirmation of the agreement.
+API Overview
+The eBay API is used to fetch item information, such as title, condition, and images, from eBay listings.
 
-## Overview
+Endpoint: The findItemsAdvanced endpoint is used to fetch items related to search keywords.
+Notes:
+Fetch requests are limited to 10 items per search to avoid overwhelming the user with results.
+Items fetched from eBay are cross-checked with the TradeBay database to ensure they are unique.
 
-For your first Capstone Project, you’ll build a database-driven website off an external
-API of your choice. Your finished capstone will be an integral part of your portfolio; it will demonstrate to potential employers everything you’ve learned from this course.
+Technology Stack
+Backend:
 
-We want you to work on a challenging project that will incorporate all of the back-end
-skills you’ve been developing and some of your front-end skills from the last section.
-The goal of this project isn’t to create something that’s never been done before. You
-could potentially create a website similar to one that already exists, or use a popular
-API. That being said, we do encourage you to be creative when building your site. You’re free to choose any API you’d like to use and we encourage you to tap into your
-imagination throughout the project.
+Flask: A Python-based web framework that powers the backend of the app.
+SQLAlchemy: ORM for database management.
+PostgreSQL: The primary database used for storing user, item, and trade data.
+Frontend:
 
-There is a term in software development called CRUD - Create, Read, Update, Delete. This refers to all of the basic operations that a relational database performs. Your website should have more functionality than simple CRUD.
+HTML/CSS: Used for rendering pages.
+JavaScript: For handling frontend logic, such as making API calls and managing the DOM dynamically.
+Security:
 
-## Examples
+Flask-WTF: For handling forms with CSRF protection.
+Bcrypt: For secure password hashing.
+Deployment:
 
-There are thousands of free, publically available APIs. If you love cars, you can pick
-from dozens of automotive APIs to build something that will reflect your passion. If you’re more into history, look into an API that lists the nobility of Europe. If you love sports, build a site about India’s top cricketers or your local football league.
+Render: The platform used to deploy the application.
+Running the Application
+Install dependencies:
+Use the requirements.txt file to install necessary Python libraries:
 
-Let’s give you an example of what a site could look like. Say you choose an API like The
-Movie Database, your site could have a landing page saying “Welcome To MyMovieDB” and a separate page that displays a sortable list of all the movies in the API. This would be CRUD.
+pip install -r requirements.txt
+Set up environment variables:
+Use the .env file to store secrets, such as the SECRET_KEY and database credentials.
 
-You could implement various filtering methods - to filter based on an actor, a director,
-the year the movie was released, etc. When you click on the record associated with the movie, you could redirect a user to a separate page that displays all of the data
-associated with that movie.
+Database Migrations:
+Run the following commands to apply migrations:
+flask db upgrade
 
-Now let’s talk about bells and whistles. If you were to implement ONE feature like
-creating sharable lists of your favorite movies, finding and playing a trailer for the movie on-page, or a simple “recommendation system” that would recommend new movies based on similarities to movies you liked, this would go beyond CRUD. A simple
-“recommendation system” would be along the lines of, if you like Big Daddy with Adam
-Sandler, recommending other Adam Sandler comedies from the 90s or recommending
-movies his co-stars like Steve Buscemi starred in. This does not mean creating a
-complicated system from scratch like Netflix.
+Start the Application:
+Run the app locally using:
+flask run
 
-It is better to pick a project that errs on the side of simple and boring than a complex
-project with a million moving parts you can get stuck in.
-
-[Here is an example of a previous project.](https://github.com/juliahazer/chart-my-team)
-
-## Guidelines
-
-1. You will use the following technologies in this project: Python/Flask, PostgreSQL, SQLAlchemy, Heroku, Jinja, RESTful APIs, JavaScript, HTML, CSS. Depending on your idea, you might end up using WTForms and other technologies discussed in the course.
-2. Every step of the project has submissions. This will alert your mentor to evaluate your work. Pay attention to the instructions so you submit the right thing. You will submit the link to your GitHub repo several times, this is for your mentor’s convenience. Your URL on GitHub is static and will not change.
-3. The first two steps require mentor approval to proceed, but after that, you are free to continue working on the project after you submit your work. For instance, you don’t need your mentor to approve your database schema before you start working on your site. Likewise, you don’t need your mentor to approve the first iteration of your site before you start polishing it.
-4. If you get stuck, there is a wealth of resources at your disposal. The course contains all of the material you will need to complete this project, but a well-phrased Google search might yield you an immediate solution to your problem. Don’t forget that your Slack community, TAs, and your mentor there to help you out.
-5. Make sure you use a free API and deploy your project on Heroku , so everyone can see your work!
+Explore TradeBay today and start trading items without the need for cash!
