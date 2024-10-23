@@ -77,8 +77,18 @@ def do_logout():
 @app.route('/')
 def homepage():
     """Displays the homepage of Tradebay."""
-
-    return render_template('index.html')
+    items = []
+    if g.user:
+        # Fetch items if the user is logged in
+        items = Item.query.order_by(db.func.random()).limit(10).all()
+    
+    item_users = {}
+    for item in items:
+        # Get users offering this item
+        users_offering = OfferedItem.query.filter_by(item_id=item.id).all()
+        item_users[item.id] = [user.user for user in users_offering]  # Create a list of users for each item
+    
+    return render_template('index.html', items=items, item_users=item_users)
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -147,9 +157,7 @@ def logout():
 def add_offered_item():
     """Add an item to the user's offered items list."""
     if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+        return jsonify({"success": False, "error": "You must log in first."}), 401
 
     data = request.get_json()
     item_id = data.get('item_id')
@@ -177,10 +185,8 @@ def add_offered_item():
 @app.route('/add-requested-item', methods=['POST'])
 def add_requested_item():
     """Add an item to the user's requested items list."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     data = request.get_json()
     item_id = data.get('item_id')
@@ -207,6 +213,12 @@ def add_requested_item():
 
 @app.route('/items/search', methods=['GET'])
 def search():
+    """Searches for the first ten items close to the search term and adds them to the database.
+    
+    Then displays the items to the user."""
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
+    
     term = request.args.get('q')
     if not term:
         flash("You must enter a search term.", "danger")
@@ -216,10 +228,6 @@ def search():
     ebay = Ebay_24(API_KEY, term)
     items_from_api = ebay.fetch()
 
-    # Clear any existing items that match the search term (if you want to update the list every time)
-    # Item.query.filter(Item.title.ilike(f'%{term}%')).delete(synchronize_session=False)
-    # db.session.commit()
-
     # Filter and add new items to the database
     for item_data in items_from_api:
         # Check if the item already exists in the database
@@ -228,7 +236,8 @@ def search():
             new_item = Item(
                 title=item_data['title'],
                 condition=item_data['condition'],
-                image_url=item_data['image_url']
+                image_url=item_data['image_url'],
+                high_res_image_url=item_data['high_res_image_url']
             )
             db.session.add(new_item)
     db.session.commit()
@@ -236,6 +245,17 @@ def search():
     # Query database for items matching the search term
     items = Item.query.filter(Item.title.ilike(f'%{term}%')).limit(10).all()
 
+    if request.headers.get('Accept') == 'application/json':
+        item_list = []
+        for item in items:
+            item_list.append({
+                'title': item.title,
+                'condition': item.condition,
+                'image_url': item.image_url,
+                'high_res_image_url': item.high_res_image_url
+            })
+        return jsonify({'success': True, 'items': item_list})
+    
     item_users = {}
     for item in items:
         # Get users offering this item
@@ -249,10 +269,8 @@ def search():
 @app.route('/trade-items')
 def list_items():
     """Display the user's offered and requested items."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     user = g.user
     
@@ -265,16 +283,12 @@ def list_items():
 @app.route('/initiate-trade', methods=['POST'])
 def initiate_trade():
     """Initiate a trade between the current user and another user."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     data = request.get_json()
     your_item_id = data.get('your_item_id')
     their_item_id = data.get('their_item_id')
-    print(f"{your_item_id}")
-    print(f"{their_item_id}")
     if not your_item_id or not their_item_id:
         return jsonify({"success": False, "error": "Both items must be selected."}), 400
     
@@ -309,8 +323,8 @@ def initiate_trade():
 
     # Create the trade record
     trade = Trade(
-        item_offered_id=your_item_id,
-        item_requested_id=requested_item_id,
+        user_offered_item_id=your_item_id,  # Item the current user is offering
+        other_user_offered_item_id=their_item_id,  # Item the other user is offering
         status='Pending'
     )
     
@@ -327,10 +341,8 @@ def initiate_trade():
 @app.route('/user/<int:user_id>')
 def user_profile(user_id):
     """Display the user's profile and their offered items."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
 
     other_user = User.query.get(user_id)
     if not other_user:
@@ -346,10 +358,8 @@ def user_profile(user_id):
 @app.route('/remove-item', methods=['DELETE'])
 def remove_item():
     """Remove an item from the offered or requested list."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
 
     # Get the item ID and type from the request body
     data = request.get_json()
@@ -380,10 +390,8 @@ def remove_item():
 @app.route('/user/<int:other_user_id>/trade-items')
 def trade_items(other_user_id):
     """Display trade items for the other user."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     # Get the current user
     current_user_id = g.user.id
@@ -406,14 +414,14 @@ def trade_items(other_user_id):
 @app.route('/user/pending-trades')
 def pending_trades():
     """Show all pending trades involving the current user."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
+    
+    trades = None
 
     trades = Trade.query.filter(
-        (Trade.offered_item.has(user_id=g.user.id)) | 
-        (Trade.requested_item.has(user_id=g.user.id))
+        (Trade.user_offered_item.has(user_id=g.user.id)) | 
+        (Trade.other_user_offered_item.has(user_id=g.user.id))
     ).all()
 
     return render_template('users/pending_trades.html', trades=trades)
@@ -422,10 +430,8 @@ def pending_trades():
 @app.route('/accept-trade/<int:trade_id>', methods=['POST'])
 def accept_trade(trade_id):
     """Accept a pending trade."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     trade = Trade.query.get(trade_id)
 
@@ -440,10 +446,8 @@ def accept_trade(trade_id):
 @app.route('/reject-trade/<int:trade_id>', methods=['POST'])
 def reject_trade(trade_id):
     """Reject a pending trade."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     trade = Trade.query.get(trade_id)
 
@@ -459,10 +463,8 @@ def reject_trade(trade_id):
 @app.route('/user/<int:user_id>/edit', methods=['GET', 'POST'])
 def edit_profile(user_id):
     """Displays the form to edit the User's Profile information."""
-    if (g.user == None):
-        flash("You must log in first.")
-        form = LoginForm()
-        return render_template('users/login.html', form=form)
+    if not g.user:
+        return jsonify({"success": False, "error": "You must log in first."}), 401
     
     user = User.query.get_or_404(user_id)
 

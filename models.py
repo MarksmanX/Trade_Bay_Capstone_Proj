@@ -7,6 +7,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
+    """User model"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -48,13 +49,16 @@ class User(db.Model):
         return False
 
 class Item(db.Model):
+    """Model for the items taken from ebay API."""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     condition = db.Column(db.String(50))
     image_url = db.Column(db.String(500))
+    high_res_image_url = db.Column(db.String(500))
     
 
 class OfferedItem(db.Model):
+    """Model for when a user wants to offer an item for a trade."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
@@ -63,6 +67,7 @@ class OfferedItem(db.Model):
 
 
 class RequestedItem(db.Model):
+    """Model for user to show other users things that they might want in a trade."""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
@@ -71,15 +76,18 @@ class RequestedItem(db.Model):
     
 
 class Trade(db.Model):
+    """Model for trade between two users."""
     id = db.Column(db.Integer, primary_key=True)
-    item_offered_id = db.Column(db.Integer, db.ForeignKey('offered_item.id'))
-    item_requested_id = db.Column(db.Integer, db.ForeignKey('requested_item.id'))
+    # item_offered_id = db.Column(db.Integer, db.ForeignKey('offered_item.id'))
+    # item_requested_id = db.Column(db.Integer, db.ForeignKey('requested_item.id'))
+    user_offered_item_id = db.Column(db.Integer, db.ForeignKey('offered_item.id'))
+    other_user_offered_item_id = db.Column(db.Integer, db.ForeignKey('offered_item.id'))
     status = db.Column(db.String(50), default='Pending')
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    offered_item = db.relationship('OfferedItem', foreign_keys=[item_offered_id])
-    requested_item = db.relationship('RequestedItem', foreign_keys=[item_requested_id])
+    user_offered_item = db.relationship('OfferedItem', foreign_keys=[user_offered_item_id], backref='user_offers')
+    other_user_offered_item = db.relationship('OfferedItem', foreign_keys=[other_user_offered_item_id], backref='other_offers')
 
 def connect_db(app):
     """Connect this database to provided Flask app.

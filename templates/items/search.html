@@ -11,12 +11,21 @@
 </head>
 <body>
     <h1>Items</h1>
-    <div class="row">
+    <div class="row" id="results-container">
+        {% if not items %}
+            <p>No items found that match your search.</p>
+        {% endif %}
         {% for item in items %}
         <div class="col-md-4">
             <div class="card bg-dark text-light mb-4">
-                {% if item.image_url %}
-                <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                {% if item.image_url or item.high_res_image_url %}
+                <img 
+                    src="{{ item.high_res_image_url or '/static/images/default-item.png' }}" 
+                    
+                    class="card-img-top" 
+                    alt="{{ item.title }}" 
+                    style="max-width: 100%; height: auto; object-fit: cover;"
+                >
                 {% else %}
                 <img src="/static/images/default-item.png" class="card-img-top" alt="No image available" style="height: 200px; object-fit: cover;">
                 {% endif %}
@@ -48,7 +57,6 @@
         </div>
         {% endfor %}
     </div>
-    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
 </body>
 </html>
 {% endblock %}

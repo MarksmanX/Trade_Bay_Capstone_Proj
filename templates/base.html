@@ -36,8 +36,8 @@
       <ul class="nav navbar-nav ms-auto">
         <li>
           <form class="d-flex" action="/items/search">
-            <input name="q" class="form-control my-2" placeholder="Search Trade-Bay" aria-label="Search" id="search">
-              <button class="btn btn-outline-secondary mx-2" type="submit">
+            <input name="q" class="form-control my-2" placeholder="Search Trade-Bay" aria-label="Search" id="search-input">
+              <button class="btn btn-outline-secondary mx-2" type="submit" id="search-button">
                 <i class="fa fa-search"></i>
               </button>
           </form>
@@ -64,6 +64,10 @@
     </div>
   </div>
 </nav>
+<div id="loading-indicator" style="display: none;">
+  <img src="/static/images/loading-buffering.gif" alt="Loading..." />
+  <p>Loading results, please wait...</p>
+</div>
 <div class="container">
   {% for category, message in get_flashed_messages(with_categories=True) %}
   <div class="alert alert-{{ category }}">{{ message }}</div>
@@ -73,5 +77,6 @@
   {% endblock %}
 
 </div>
+<script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
 </body>
 </html>
